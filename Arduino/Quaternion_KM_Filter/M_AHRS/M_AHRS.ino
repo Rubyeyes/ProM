@@ -76,6 +76,13 @@ unsigned long timestamp;
 unsigned long timestanp_old;
 float G_Dt; // integration time
 
+// Read every sensor
+void read_sensors()
+{
+	Read_Gyro();	// Read gyroscope
+	Read_Accel();	// Read accelerometer
+	Read_Magn();	// Read magnetometer
+}
 // Setup Arduino Board and Sensors
 void setup()
 {
@@ -92,6 +99,27 @@ void setup()
 	Accel_Init();	// Initial Accelerometer
 	Magn_Init();	// Initial Magnetometer
 	Gyro_Init();	// Initial Gyroscope
+	
+	// Read every sensor and record a time stamp
+	read_sensors();
+	timestamp = millis();
+}
+
+// Main Loop
+void loop()
+{
+	// Time to read the sensors again?
+	if((millis() - timestamp) >= OUTPUT__DATA_INTERVAL)
+	{
+		timestamp_old = timestamp;
+		timestamp = millis();
+		
+		// Update sensor readings
+		read_sensors();
+		
+		// Run Quaternion Based Madgwick algorithm
+		AHRSupdate(gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], magnetom[0], magnetom[1], magnetom[2])
+	}
 }
 
 
